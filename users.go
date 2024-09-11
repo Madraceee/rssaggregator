@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -54,34 +53,6 @@ func (cfg *apiConfig) addUser(w http.ResponseWriter, r *http.Request) {
 	respondWithJson(w, 201, result)
 }
 
-func (cfg *apiConfig) getUsersByApiKey(w http.ResponseWriter, r *http.Request) {
-	authorization := r.Header.Get("Authorization")
-	if authorization == "" {
-		log.Println("Empty Header")
-		respondWithError(w, 400, "Invalid Inputs")
-		return
-	}
-
-	authHeader := strings.Split(authorization, " ")
-	if len(authHeader) != 2 {
-		log.Println("Invalid Header - ", authorization)
-		respondWithError(w, 400, "Invalid Inputs")
-		return
-	}
-
-	if authHeader[0] != "ApiKey" {
-		log.Println("Invalid Header - ", authorization)
-		respondWithError(w, 400, "Invalid Inputs")
-		return
-	}
-
-	apiKey := authHeader[1]
-	user, err := cfg.DB.FetchByApiKey(context.Background(), apiKey)
-	if err != nil {
-		log.Println("Error while fetching user using ApiKey - ", err)
-		respondWithError(w, 500, "Internal Server Error")
-		return
-	}
-
+func (cfg *apiConfig) getUser(w http.ResponseWriter, r *http.Request, user database.User) {
 	respondWithJson(w, 200, user)
 }
