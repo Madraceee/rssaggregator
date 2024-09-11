@@ -11,6 +11,33 @@ import (
 	"github.com/madraceee/rssaggregator/internal/database"
 )
 
+type Feed struct {
+	Id            uuid.UUID `json:"id"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+	Name          string    `json:"name"`
+	Url           string    `json:"url"`
+	UserId        uuid.UUID `json:"user_id"`
+	LastFetchedAt time.Time `json:"last_fetched_at,omitempty"`
+}
+
+func databaseFeedToFeed(feed database.Feed) Feed {
+	newFeed := Feed{
+		Id:        feed.ID,
+		CreatedAt: feed.CreatedAt,
+		UpdatedAt: feed.UpdatedAt,
+		Name:      feed.Name,
+		Url:       feed.Url,
+		UserId:    feed.UserID,
+	}
+
+	if feed.LastFetchedAt.Valid {
+		newFeed.LastFetchedAt = feed.LastFetchedAt.Time
+	}
+
+	return newFeed
+}
+
 func (cfg *apiConfig) createFeed(w http.ResponseWriter, r *http.Request, user database.User) {
 	type parameters struct {
 		Name string `json:"name"`
@@ -59,10 +86,10 @@ func (cfg *apiConfig) createFeed(w http.ResponseWriter, r *http.Request, user da
 	}
 
 	result := struct {
-		Feed       database.Feed       `json:"feed"`
+		Feed       Feed                `json:"feed"`
 		FeedFollow database.FeedFollow `json:"feed_follow"`
 	}{
-		Feed:       feed,
+		Feed:       databaseFeedToFeed(feed),
 		FeedFollow: feedFollow,
 	}
 
@@ -77,5 +104,10 @@ func (cfg *apiConfig) getAllFeeds(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJson(w, 200, feeds)
+	updatedFeeds := make([]Feed, len(feeds))
+	for k, v := range feeds {
+		updatedFeeds[k] = databaseFeedToFeed(v)
+	}
+
+	respondWithJson(w, 200, updatedFeeds)
 }
