@@ -7,4 +7,4 @@ CREATE TABLE users(
 );
 
 -- +goose Down
-DELETE TABLE user;
+DROP TABLE users;
