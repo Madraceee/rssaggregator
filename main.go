@@ -58,6 +58,8 @@ func main() {
 	mux.HandleFunc("DELETE /v1/feed_follows/{feed_follow_id}", apiConfig.middlewareAuth(apiConfig.deleteFeedFollow))
 	mux.HandleFunc("GET /v1/feed_follows", apiConfig.middlewareAuth(apiConfig.getUserFeedFollow))
 
+	mux.HandleFunc("GET /v1/posts", apiConfig.middlewareAuth(apiConfig.getPostsByUser))
+
 	server := http.Server{
 		Handler: mux,
 		Addr:    ":" + port,

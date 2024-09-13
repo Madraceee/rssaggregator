@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/madraceee/rssaggregator/internal/database"
 )
 
@@ -77,6 +78,26 @@ func scrapeFeed(feed database.Feed, wg *sync.WaitGroup, db *database.Queries) {
 	}
 
 	for _, item := range rss.Channel.Items {
+		pubdate, err := time.Parse("Mon, 02 Jan 2006 15:04:05 -0700", item.PubDate)
+		if err != nil {
+			log.Println("Error while getting pub date from ", item.Title, err)
+		}
+
+		rssPost := database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			Title:       item.Title,
+			Description: item.Description,
+			Url:         item.Link,
+			FeedID:      feed.ID,
+			PublishedAt: pubdate,
+		}
+		_, err = db.CreatePost(context.Background(), rssPost)
+		if err != nil {
+			log.Println("Error while inserting data", err)
+			continue
+		}
 		log.Printf("Fetched item of %s from rss %s\n", item.Title, rss.Channel.Title)
 	}
 }
