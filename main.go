@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -63,5 +64,6 @@ func main() {
 	}
 
 	log.Println("Server starting at :", port)
+	scrapper(2, 1*time.Minute, apiConfig.DB)
 	server.ListenAndServe()
 }
